@@ -1,0 +1,16 @@
+[project]
+name = "community capstone"
+version = "0.1.0"
+description = "Community capstone 2025: Animal shelter problem solving with machine learning"
+authors = [
+    {name = "atharvavyas1",email = "atharva.vyas25@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
