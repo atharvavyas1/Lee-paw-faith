@@ -93,8 +93,8 @@ layer = pdk.Layer(
     "ScatterplotLayer",
     data=data_for_pydeck,
     get_position='[longitude, latitude]',
-    get_color='color_rgb',
-    get_radius=100,
+    get_fill_color='color_rgb',
+    get_radius=1000,
     pickable=True,
     auto_highlight=True,
 )
