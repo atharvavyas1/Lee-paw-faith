@@ -93,11 +93,12 @@ layer = pdk.Layer(
     "HexagonLayer",
     data=data_for_pydeck,
     get_position='[longitude, latitude]',
-    get_fill_color='color_rgb',
-    get_radius=1000,
-    pickable=True,
     auto_highlight=True,
-)
+    elevation_scale=50,
+    pickable=True,
+    elevation_range=[0, 3000],
+    extruded=True,
+    coverage=1)
 
 view_state = pdk.ViewState(
     latitude=chart_data['latitude'].mean(),
