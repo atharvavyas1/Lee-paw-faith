@@ -19,4 +19,4 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.5"
-
+package-mode = false
