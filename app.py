@@ -69,19 +69,34 @@ chart_data = df[['latitude', 'longitude', 'outcome_type']].dropna()
 st.write("Let's make a geospatial map of the Sonoma County Animal Shelter data")
 # st.map(chart_data) 
 
-# Assign a color to each outcome_type
+# Assign a unique color to each outcome_type
 outcome_types = chart_data['outcome_type'].unique()
-color_map = {ot: [int(x) for x in np.random.choice(range(256), size=3)] for ot in outcome_types}
+color_palette = [
+    [255, 0, 0],    # Red
+    [0, 255, 0],    # Green
+    [0, 0, 255],    # Blue
+    [255, 255, 0],  # Yellow
+    [255, 0, 255],  # Magenta
+    [0, 255, 255],  # Cyan
+    [128, 0, 128],  # Purple
+    [255, 165, 0],  # Orange
+    [0, 128, 0],    # Dark Green
+    [128, 128, 128] # Gray
+]
+color_map = {ot: color_palette[i % len(color_palette)] for i, ot in enumerate(outcome_types)}
 chart_data['color'] = chart_data['outcome_type'].map(color_map)
 
-# Create a pydeck chart
+# Convert DataFrame to records for pydeck
+data_for_pydeck = chart_data.to_dict(orient='records')
+
 layer = pdk.Layer(
     "ScatterplotLayer",
-    data=chart_data,
+    data=data_for_pydeck,
     get_position='[longitude, latitude]',
     get_color='color',
     get_radius=100,
     pickable=True,
+    auto_highlight=True,
 )
 
 view_state = pdk.ViewState(
