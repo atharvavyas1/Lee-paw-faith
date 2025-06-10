@@ -4,6 +4,7 @@ import requests
 import io
 import re
 import numpy as np
+import pydeck as pdk
 
 st.title("Sonoma County Animal Shelter Geospatial Map")
 
@@ -63,7 +64,31 @@ def split_latlon(val):
 df[['latitude', 'longitude']] = df['location_clean'].apply(split_latlon)
 
 # Prepare data for map (drop rows with missing lat/lon)
-chart_data = df[['latitude', 'longitude']].dropna()
+chart_data = df[['latitude', 'longitude', 'outcome_type']].dropna()
 
 st.write("Let's make a geospatial map of the Sonoma County Animal Shelter data")
-st.map(chart_data) 
+# st.map(chart_data) 
+
+# Assign a color to each outcome_type
+outcome_types = chart_data['outcome_type'].unique()
+color_map = {ot: [int(x) for x in np.random.choice(range(256), size=3)] for ot in outcome_types}
+chart_data['color'] = chart_data['outcome_type'].map(color_map)
+
+# Create a pydeck chart
+layer = pdk.Layer(
+    "ScatterplotLayer",
+    data=chart_data,
+    get_position='[longitude, latitude]',
+    get_color='color',
+    get_radius=100,
+    pickable=True,
+)
+
+view_state = pdk.ViewState(
+    latitude=chart_data['latitude'].mean(),
+    longitude=chart_data['longitude'].mean(),
+    zoom=9,
+    pitch=0,
+)
+
+st.pydeck_chart(pdk.Deck(layers=[layer], initial_view_state=view_state))
