@@ -1,5 +1,5 @@
 [project]
-name = "community capstone"
+name = "community-capstone"
 version = "0.1.0"
 description = "Community capstone 2025: Animal shelter problem solving with machine learning"
 authors = [
@@ -8,9 +8,15 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "streamlit (>=1.45.1,<2.0.0)",
+    "missingno (>=0.5.2,<0.6.0)"
 ]
 
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.5"
+
