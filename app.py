@@ -90,15 +90,14 @@ chart_data['color_rgb'] = chart_data['outcome_type'].map(color_map)
 data_for_pydeck = chart_data.to_dict(orient='records')
 
 layer = pdk.Layer(
-    "HexagonLayer",
+    "ScatterplotLayer",
     data=data_for_pydeck,
     get_position='[longitude, latitude]',
-    auto_highlight=True,
-    elevation_scale=50,
+    get_color='color_rgb',
+    get_radius=100,
     pickable=True,
-    elevation_range=[0, 3000],
-    extruded=True,
-    coverage=1)
+    auto_highlight=True,
+)
 
 view_state = pdk.ViewState(
     latitude=chart_data['latitude'].mean(),
