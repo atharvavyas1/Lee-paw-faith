@@ -90,7 +90,7 @@ chart_data['color_rgb'] = chart_data['outcome_type'].map(color_map)
 data_for_pydeck = chart_data.to_dict(orient='records')
 
 layer = pdk.Layer(
-    "ScatterplotLayer",
+    "HexagonLayer",
     data=data_for_pydeck,
     get_position='[longitude, latitude]',
     get_fill_color='color_rgb',
