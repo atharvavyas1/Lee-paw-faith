@@ -83,7 +83,7 @@ color_palette = [
     [0, 128, 0],    # Dark Green
     [128, 128, 128] # Gray
 ]
-color_map = {ot: color_palette[i % len(color_palette)] for i, ot in enumerate(outcome_types)}
+# color_map = {ot: color_palette[i % len(color_palette)] for i, ot in enumerate(outcome_types)}
 chart_data['color'] = chart_data['outcome_type'].map(color_map)
 
 # Convert DataFrame to records for pydeck
