@@ -83,8 +83,8 @@ color_palette = [
     [0, 128, 0],    # Dark Green
     [128, 128, 128] # Gray
 ]
-# color_map = {ot: color_palette[i % len(color_palette)] for i, ot in enumerate(outcome_types)}
-# chart_data['color'] = chart_data['outcome_type'].map(color_map)
+color_map = {ot: color_palette[i % len(color_palette)] for i, ot in enumerate(outcome_types)}
+chart_data['color'] = chart_data['outcome_type'].map(color_map)
 
 # Convert DataFrame to records for pydeck
 data_for_pydeck = chart_data.to_dict(orient='records')
@@ -106,3 +106,11 @@ view_state = pdk.ViewState(
 )
 
 st.pydeck_chart(pdk.Deck(layers=[layer], initial_view_state=view_state))
+
+# Display a legend for outcome_types
+st.markdown("### Outcome Type Legend")
+legend_html = ""
+for ot, color in color_map.items():
+    color_hex = '#%02x%02x%02x' % tuple(color)
+    legend_html += f'<span style="display:inline-block;width:16px;height:16px;background:{color_hex};margin-right:8px;border-radius:3px;"></span> {ot}<br>'
+st.markdown(legend_html, unsafe_allow_html=True)
