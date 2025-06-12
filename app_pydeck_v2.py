@@ -8,13 +8,13 @@ import pydeck as pdk
 
 # Set page config
 st.set_page_config(
-    page_title="Animal Shelter Locations - Pydeck",
+    page_title="Animal Shelter Locations",
     page_icon="🐾",
     layout="wide"
 )
 
-st.title("🐾 Animal Shelter Location Dashboard (Pydeck Version)")
-st.markdown("Interactive map showing animal shelter locations in Sonoma County using Pydeck")
+st.title("🐾 Animal Shelter Location Dashboard")
+st.markdown("Interactive map showing animal shelter locations in Sonoma County")
 
 # Function to extract the (lat, lon) string or keep NaN
 def extract_latlon(val):
