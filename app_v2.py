@@ -141,7 +141,7 @@ if 'location' in df.columns:
         with col2:
             max_points = st.selectbox(
                 "Max points to display",
-                [100, 250, 500, 1000, 2500],
+                [100, 250, 500, 1000, 2500, 5000, 10000, 25000, 30000],
                 index=1,
                 help="Limit points for better performance"
             )
@@ -250,7 +250,7 @@ if 'location' in df.columns:
             legend_html = '''
             <div style="position: fixed; 
                         bottom: 50px; right: 50px; width: 200px; height: 300px; 
-                        background-color: white; border:2px solid grey; z-index:9999; 
+                        background-color: black; border:2px solid grey; z-index:9999; 
                         font-size:12px; padding: 10px">
             <h4>Outcome Types</h4>
             <p><span style="color: #28a745;">●</span> Adoption</p>
