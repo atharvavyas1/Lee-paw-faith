@@ -264,9 +264,9 @@ if 'location' in df.columns:
         with col2:
             max_points = st.selectbox(
                 "Max points to display",
-                [500, 1000, 2500, 5000, 10000, 35000],
-                index=[500, 1000, 2500, 5000, 10000, 35000].index(st.session_state.map_max_points),
-                help="Pydeck handles large datasets well",
+                [100, 250, 500, 1000, 2500, 5000, 10000, 30000],
+                index=7,
+                help="Limit points for better performance",
                 key="max_points_select"
             )
             st.session_state.map_max_points = max_points
