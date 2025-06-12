@@ -136,54 +136,140 @@ if 'location' in df.columns:
         # Create the map
         st.subheader("📍 Animal Shelter Locations Map")
         
+        # Add map performance controls
+        col1, col2 = st.columns([3, 1])
+        with col2:
+            max_points = st.selectbox(
+                "Max points to display",
+                [100, 250, 500, 1000, 2500],
+                index=1,
+                help="Limit points for better performance"
+            )
+            use_clustering = st.checkbox("Use clustering", value=True, help="Group nearby points")
+        
         if len(df_filtered) > 0:
+            # Limit data for performance
+            df_map = df_filtered.head(max_points) if len(df_filtered) > max_points else df_filtered
+            
+            if len(df_filtered) > max_points:
+                st.info(f"Showing {max_points} of {len(df_filtered)} points for performance. Use filters to refine data.")
+            
             # Calculate center point
-            center_lat = df_filtered['latitude'].mean()
-            center_lon = df_filtered['longitude'].mean()
+            center_lat = df_map['latitude'].mean()
+            center_lon = df_map['longitude'].mean()
             
             # Create folium map
             m = folium.Map(
                 location=[center_lat, center_lon],
                 zoom_start=10,
-                tiles='OpenStreetMap'
+                tiles='OpenStreetMap',
+                prefer_canvas=True  # Better performance for many markers
             )
             
-            # Add markers for each location
-            for idx, row in df_filtered.iterrows():
-                # Create popup text with available information
-                popup_text = f"<b>Record ID:</b> {idx}<br>"
-                
-                # Add available columns to popup
-                for col in ['animal_type', 'breed', 'color', 'outcome_type', 'age_upon_outcome']:
-                    if col in row and pd.notna(row[col]):
-                        popup_text += f"<b>{col.replace('_', ' ').title()}:</b> {row[col]}<br>"
-                
-                popup_text += f"<b>Coordinates:</b> ({row['latitude']:.4f}, {row['longitude']:.4f})"
-                
-                # Determine marker color based on outcome type (if available)
-                if 'outcome_type' in row and pd.notna(row['outcome_type']):
-                    outcome = str(row['outcome_type']).lower()
-                    if 'adoption' in outcome:
-                        color = 'green'
-                    elif 'transfer' in outcome:
-                        color = 'blue'
-                    elif 'return' in outcome:
-                        color = 'orange'
-                    elif 'euthanasia' in outcome:
-                        color = 'red'
-                    else:
-                        color = 'gray'
-                else:
-                    color = 'blue'
-                
-                folium.Marker(
-                    location=[row['latitude'], row['longitude']],
-                    popup=folium.Popup(popup_text, max_width=300),
-                    icon=folium.Icon(color=color, icon='heart')
+            # Define color mapping for all outcome types
+            outcome_colors = {
+                'adoption': 'green',
+                'transfer': 'blue', 
+                'return to owner': 'purple',
+                'rtos': 'purple',
+                'euthanize': 'red',
+                'disposal': 'black',
+                'died': 'darkred',
+                'vet': 'orange',
+                'escaped/stolen': 'pink',
+                'shelter': 'lightblue'
+            }
+            
+            if use_clustering:
+                # Use MarkerCluster for better performance with many points
+                from folium.plugins import MarkerCluster
+                marker_cluster = MarkerCluster(
+                    name="Animal Locations",
+                    overlay=True,
+                    control=True,
+                    maxClusterRadius=50
                 ).add_to(m)
+                
+                # Add markers to cluster
+                for idx, row in df_map.iterrows():
+                    # Create popup text with available information
+                    popup_text = f"<b>Record ID:</b> {idx}<br>"
+                    
+                    # Add available columns to popup
+                    for col in ['animal_type', 'breed', 'color', 'outcome_type', 'age_upon_outcome']:
+                        if col in row and pd.notna(row[col]):
+                            popup_text += f"<b>{col.replace('_', ' ').title()}:</b> {row[col]}<br>"
+                    
+                    popup_text += f"<b>Coordinates:</b> ({row['latitude']:.4f}, {row['longitude']:.4f})"
+                    
+                    # Determine marker color
+                    color = 'gray'  # default
+                    if 'outcome_type' in row and pd.notna(row['outcome_type']):
+                        outcome = str(row['outcome_type']).lower().strip()
+                        color = outcome_colors.get(outcome, 'gray')
+                    
+                    folium.Marker(
+                        location=[row['latitude'], row['longitude']],
+                        popup=folium.Popup(popup_text, max_width=300),
+                        icon=folium.Icon(color=color, icon='paw', prefix='fa')
+                    ).add_to(marker_cluster)
+            
+            else:
+                # Use CircleMarkers for better performance (lighter weight)
+                for idx, row in df_map.iterrows():
+                    # Create popup text
+                    popup_text = f"<b>Record ID:</b> {idx}<br>"
+                    for col in ['animal_type', 'breed', 'color', 'outcome_type', 'age_upon_outcome']:
+                        if col in row and pd.notna(row[col]):
+                            popup_text += f"<b>{col.replace('_', ' ').title()}:</b> {row[col]}<br>"
+                    popup_text += f"<b>Coordinates:</b> ({row['latitude']:.4f}, {row['longitude']:.4f})"
+                    
+                    # Determine color
+                    color = '#808080'  # default gray
+                    if 'outcome_type' in row and pd.notna(row['outcome_type']):
+                        outcome = str(row['outcome_type']).lower().strip()
+                        color_map = {
+                            'adoption': '#28a745', 'transfer': '#007bff', 'return to owner': '#6f42c1',
+                            'rtos': '#6f42c1', 'euthanize': '#dc3545', 'disposal': '#343a40',
+                            'died': '#721c24', 'vet': '#fd7e14', 'escaped/stolen': '#e83e8c',
+                            'shelter': '#17a2b8'
+                        }
+                        color = color_map.get(outcome, '#808080')
+                    
+                    folium.CircleMarker(
+                        location=[row['latitude'], row['longitude']],
+                        radius=6,
+                        popup=folium.Popup(popup_text, max_width=300),
+                        color='white',
+                        weight=1,
+                        fillColor=color,
+                        fillOpacity=0.8
+                    ).add_to(m)
+            
+            # Add legend
+            legend_html = '''
+            <div style="position: fixed; 
+                        bottom: 50px; right: 50px; width: 200px; height: 300px; 
+                        background-color: white; border:2px solid grey; z-index:9999; 
+                        font-size:12px; padding: 10px">
+            <h4>Outcome Types</h4>
+            <p><span style="color: #28a745;">●</span> Adoption</p>
+            <p><span style="color: #007bff;">●</span> Transfer</p>
+            <p><span style="color: #6f42c1;">●</span> Return to Owner/RTOS</p>
+            <p><span style="color: #dc3545;">●</span> Euthanize</p>
+            <p><span style="color: #343a40;">●</span> Disposal</p>
+            <p><span style="color: #721c24;">●</span> Died</p>
+            <p><span style="color: #fd7e14;">●</span> Vet</p>
+            <p><span style="color: #e83e8c;">●</span> Escaped/Stolen</p>
+            <p><span style="color: #17a2b8;">●</span> Shelter</p>
+            <p><span style="color: #808080;">●</span> Other</p>
+            </div>
+            '''
+            m.get_root().html.add_child(folium.Element(legend_html))
             
             # Display the map
-            map_data = st_folium(m, width=700, height=500)
+            with st.spinner("Rendering map..."):
+                map_data = st_folium(m, width=700, height=500, returned_data=["last_object_clicked"])
             
             # Display filtered data table
             st.subheader("📊 Filtered Data")
@@ -223,10 +309,15 @@ with st.expander("ℹ️ About this Dashboard"):
     - Data table showing filtered results
     
     **Marker Colors:**
-    - 🟢 Green: Adoptions
-    - 🔵 Blue: Transfers
-    - 🟠 Orange: Returns
-    - 🔴 Red: Euthanasia
+    - 🟢 Green: Adoption
+    - 🔵 Blue: Transfer  
+    - 🟣 Purple: Return to Owner/RTOS
+    - 🔴 Red: Euthanize
+    - ⚫ Black: Disposal
+    - 🟤 Dark Red: Died
+    - 🟠 Orange: Vet
+    - 🩷 Pink: Escaped/Stolen
+    - 🔵 Light Blue: Shelter
     - ⚫ Gray: Other outcomes
     
     **Data Source:** Sonoma County Open Data Portal
