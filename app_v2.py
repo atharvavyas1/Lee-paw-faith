@@ -269,7 +269,7 @@ if 'location' in df.columns:
             
             # Display the map
             with st.spinner("Rendering map..."):
-                map_data = st_folium(m, width=700, height=500, returned_data=["last_object_clicked"])
+                map_data = st_folium(m, width=700, height=500)
             
             # Display filtered data table
             st.subheader("📊 Filtered Data")
