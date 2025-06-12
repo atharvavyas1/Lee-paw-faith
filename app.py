@@ -66,11 +66,18 @@ df[['latitude', 'longitude']] = df['location_clean'].apply(split_latlon)
 # Prepare data for map (drop rows with missing lat/lon)
 chart_data = df[['latitude', 'longitude', 'outcome_type']].dropna()
 
-st.write("Let's make a geospatial map of the Sonoma County Animal Shelter data")
-# st.map(chart_data) 
+# Interactive multiselect for outcome types
+outcome_types = sorted(chart_data['outcome_type'].unique())
+selected_outcomes = st.multiselect(
+    'Which outcome types would you like to view on the map?',
+    outcome_types,
+    default=outcome_types  # Show all by default
+)
+
+# Filter data based on selection
+filtered_data = chart_data[chart_data['outcome_type'].isin(selected_outcomes)]
 
 # Assign a unique color to each outcome_type
-outcome_types = chart_data['outcome_type'].unique()
 color_palette = [
     [255, 0, 0],    # Red
     [0, 255, 0],    # Green
@@ -84,10 +91,10 @@ color_palette = [
     [128, 128, 128] # Gray
 ]
 color_map = {ot: color_palette[i % len(color_palette)] for i, ot in enumerate(outcome_types)}
-chart_data['color'] = chart_data['outcome_type'].map(color_map)
+filtered_data['color'] = filtered_data['outcome_type'].map(color_map)
 
 # Convert DataFrame to records for pydeck
-data_for_pydeck = chart_data.to_dict(orient='records')
+data_for_pydeck = filtered_data.to_dict(orient='records')
 
 layer = pdk.Layer(
     "ScatterplotLayer",
@@ -96,11 +103,12 @@ layer = pdk.Layer(
     get_color='color',
     get_radius=100,
     pickable=True,
+    auto_highlight=True,
 )
 
 view_state = pdk.ViewState(
-    latitude=chart_data['latitude'].mean(),
-    longitude=chart_data['longitude'].mean(),
+    latitude=filtered_data['latitude'].mean() if not filtered_data.empty else 38.4,
+    longitude=filtered_data['longitude'].mean() if not filtered_data.empty else -122.7,
     zoom=9,
     pitch=0,
 )
@@ -111,6 +119,7 @@ st.pydeck_chart(pdk.Deck(layers=[layer], initial_view_state=view_state))
 st.markdown("### Outcome Type Legend")
 legend_html = ""
 for ot, color in color_map.items():
-    color_hex = '#%02x%02x%02x' % tuple(color)
-    legend_html += f'<span style="display:inline-block;width:16px;height:16px;background:{color_hex};margin-right:8px;border-radius:3px;"></span> {ot}<br>'
+    if ot in selected_outcomes:
+        color_hex = '#%02x%02x%02x' % tuple(color)
+        legend_html += f'<span style="display:inline-block;width:16px;height:16px;background:{color_hex};margin-right:8px;border-radius:3px;"></span> {ot}<br>'
 st.markdown(legend_html, unsafe_allow_html=True)
