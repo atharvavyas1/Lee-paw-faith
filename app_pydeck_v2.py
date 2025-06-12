@@ -125,7 +125,7 @@ def render_pydeck_map(df_filtered, max_points, map_style):
     
     # Create tooltip text
     df_map['tooltip'] = df_map.apply(lambda row: 
-        f"Animal Type: {row.get('animal_type', 'N/A')}\n" +
+        f"Animal Type: {row.get('type', 'N/A')}\n" +
         f"Breed: {row.get('breed', 'N/A')}\n" +
         f"Color: {row.get('color', 'N/A')}\n" +
         f"Outcome: {row.get('outcome_type', 'N/A')}\n" +
@@ -225,8 +225,8 @@ if 'location' in df.columns:
         st.sidebar.header("Filters")
         
         # Animal type filter (if available)
-        if 'animal_type' in df_with_coords.columns:
-            animal_types = ['All'] + sorted(df_with_coords['animal_type'].dropna().unique().tolist())
+        if 'type' in df_with_coords.columns:
+            animal_types = ['All'] + sorted(df_with_coords['type'].dropna().unique().tolist())
             selected_animal_type = st.sidebar.selectbox(
                 "Animal Type", 
                 animal_types,
@@ -236,7 +236,7 @@ if 'location' in df.columns:
             st.session_state.filter_animal_type = selected_animal_type
             
             if selected_animal_type != 'All':
-                df_filtered = df_with_coords[df_with_coords['animal_type'] == selected_animal_type]
+                df_filtered = df_with_coords[df_with_coords['type'] == selected_animal_type]
             else:
                 df_filtered = df_with_coords
         else:
@@ -321,7 +321,7 @@ if 'location' in df.columns:
         
         # Select relevant columns for display
         display_cols = ['latitude', 'longitude']
-        for col in ['animal_type', 'breed', 'color', 'outcome_type', 'age_upon_outcome', 'datetime']:
+        for col in ['type', 'breed', 'color', 'outcome_type', 'age_upon_outcome', 'datetime']:
             if col in df_filtered.columns:
                 display_cols.append(col)
         
