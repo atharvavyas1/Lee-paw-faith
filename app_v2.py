@@ -193,7 +193,7 @@ def render_map(df_filtered, max_points, use_clustering):
     legend_html = '''
     <div style="position: fixed; 
                 bottom: 50px; right: 50px; width: 200px; height: 300px; 
-                background-color: white; border:2px solid grey; z-index:9999; 
+                background-color: black; border:2px solid grey; z-index:9999; 
                 font-size:12px; padding: 10px">
     <h4>Outcome Types</h4>
     <p><span style="color: #28a745;">●</span><span style="color: #28a745;"> Adoption</span></p>
