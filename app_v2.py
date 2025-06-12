@@ -193,19 +193,19 @@ def render_map(df_filtered, max_points, use_clustering):
     legend_html = '''
     <div style="position: fixed; 
                 bottom: 50px; right: 50px; width: 200px; height: 300px; 
-                background-color: black; border:2px solid grey; z-index:9999; 
+                background-color: white; border:2px solid grey; z-index:9999; 
                 font-size:12px; padding: 10px">
     <h4>Outcome Types</h4>
-    <p><span style="color: #28a745;">●</span> Adoption</p>
-    <p><span style="color: #007bff;">●</span> Transfer</p>
-    <p><span style="color: #6f42c1;">●</span> Return to Owner/RTOS</p>
-    <p><span style="color: #dc3545;">●</span> Euthanize</p>
-    <p><span style="color: #343a40;">●</span> Disposal</p>
-    <p><span style="color: #721c24;">●</span> Died</p>
-    <p><span style="color: #fd7e14;">●</span> Vet</p>
-    <p><span style="color: #e83e8c;">●</span> Escaped/Stolen</p>
-    <p><span style="color: #17a2b8;">●</span> Shelter</p>
-    <p><span style="color: #808080;">●</span> Other</p>
+    <p><span style="color: #28a745;">●</span><span style="color: #28a745;"> Adoption</span></p>
+    <p><span style="color: #007bff;">●</span><span style="color: #007bff;"> Transfer</span></p>
+    <p><span style="color: #6f42c1;">●</span><span style="color: #6f42c1;"> Return to Owner/RTOS</span></p>
+    <p><span style="color: #dc3545;">●</span><span style="color: #dc3545;"> Euthanize</span></p>
+    <p><span style="color: #343a40;">●</span><span style="color: #343a40;"> Disposal</span></p>
+    <p><span style="color: #721c24;">●</span><span style="color: #721c24;"> Died</span></p>
+    <p><span style="color: #fd7e14;">●</span><span style="color: #fd7e14;"> Vet</span></p>
+    <p><span style="color: #e83e8c;">●</span><span style="color: #e83e8c;"> Escaped/Stolen</span></p>
+    <p><span style="color: #17a2b8;">●</span><span style="color: #17a2b8;"> Shelter</span></p>
+    <p><span style="color: #808080;">●</span><span style="color: #808080;"> Other</span></p>
     </div>
     '''
     m.get_root().html.add_child(folium.Element(legend_html))
