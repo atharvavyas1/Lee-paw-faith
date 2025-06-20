@@ -131,7 +131,7 @@ def render_pydeck_map(df_filtered, max_points, map_style):
         f"Breed: {row.get('breed', 'N/A')}\n" +
         f"Color: {row.get('color', 'N/A')}\n" +
         f"Outcome: {row.get('outcome_type', 'N/A')}\n" +
-        f"Age: {row.get('age_upon_outcome', 'N/A')}\n" +
+        f"Time in Shelter: {row.get('time_in_shelter_days', 'N/A')} days\n" +
         f"Coordinates: ({row['latitude']:.4f}, {row['longitude']:.4f})", 
         axis=1
     )
@@ -215,11 +215,24 @@ if 'location' in df.columns:
     # Filter out rows with missing coordinates
     df_with_coords = df.dropna(subset=['latitude', 'longitude'])
     
-    # Convert datetime column and drop rows with invalid dates
-    if 'datetime' in df_with_coords.columns:
+    # Convert outcome_date column and drop rows with invalid dates
+    if 'outcome_date' in df_with_coords.columns:
         df_with_coords = df_with_coords.copy()
-        df_with_coords['datetime'] = pd.to_datetime(df_with_coords['datetime'], errors='coerce')
-        df_with_coords.dropna(subset=['datetime'], inplace=True)
+        df_with_coords['outcome_date'] = pd.to_datetime(df_with_coords['outcome_date'], errors='coerce')
+        df_with_coords.dropna(subset=['outcome_date'], inplace=True)
+    
+    # Convert intake_date column and drop rows with invalid dates
+    if 'intake_date' in df_with_coords.columns:
+        df_with_coords['intake_date'] = pd.to_datetime(df_with_coords['intake_date'], errors='coerce')
+        # Don't drop rows with missing intake_date, just calculate where possible
+    
+    # Calculate time in shelter (in days)
+    if 'outcome_date' in df_with_coords.columns and 'intake_date' in df_with_coords.columns:
+        df_with_coords['time_in_shelter_days'] = (
+            df_with_coords['outcome_date'] - df_with_coords['intake_date']
+        ).dt.days
+        # Replace negative values with NaN (data errors)
+        df_with_coords.loc[df_with_coords['time_in_shelter_days'] < 0, 'time_in_shelter_days'] = np.nan
 
     st.write(f"**Data Summary:**")
     col1, col2, col3 = st.columns(3)
@@ -238,9 +251,9 @@ if 'location' in df.columns:
         df_filtered = df_with_coords
 
         # Date range slider
-        if 'datetime' in df_filtered.columns:
-            min_date = df_with_coords['datetime'].min().date()
-            max_date = df_with_coords['datetime'].max().date()
+        if 'outcome_date' in df_filtered.columns:
+            min_date = df_with_coords['outcome_date'].min().date()
+            max_date = df_with_coords['outcome_date'].max().date()
 
             if st.session_state.date_range is None:
                 st.session_state.date_range = (min_date, max_date)
@@ -251,7 +264,7 @@ if 'location' in df.columns:
                 st.session_state.date_range = (min_date, max_date)
 
             selected_date_range = st.sidebar.slider(
-                "Filter by Date of Outcome",
+                "Filter by Outcome Date",
                 min_value=min_date,
                 max_value=max_date,
                 value=st.session_state.date_range,
@@ -262,8 +275,8 @@ if 'location' in df.columns:
             if len(selected_date_range) == 2:
                 start_date, end_date = selected_date_range
                 df_filtered = df_filtered[
-                    (df_filtered['datetime'].dt.date >= start_date) & 
-                    (df_filtered['datetime'].dt.date <= end_date)
+                    (df_filtered['outcome_date'].dt.date >= start_date) & 
+                    (df_filtered['outcome_date'].dt.date <= end_date)
                 ]
 
         # Animal type filter (if available)
@@ -359,7 +372,7 @@ if 'location' in df.columns:
         
         # Select relevant columns for display
         display_cols = ['latitude', 'longitude']
-        for col in ['type', 'breed', 'color', 'outcome_type', 'age_upon_outcome', 'datetime']:
+        for col in ['type', 'breed', 'color', 'outcome_type', 'time_in_shelter_days', 'outcome_date']:
             if col in df_filtered.columns:
                 display_cols.append(col)
         
