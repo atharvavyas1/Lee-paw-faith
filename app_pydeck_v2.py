@@ -196,7 +196,7 @@ if 'map_style' not in st.session_state:
     st.session_state.map_style = 'mapbox://styles/mapbox/light-v9'
 
 # Load and process data
-with st.spinner("Loading animal shelter data..."):
+with st.spinner("Loading Sonoma county animal shelter data..."):
     df = load_data()
 
 # Clean location data
@@ -257,7 +257,7 @@ if 'location' in df.columns:
                 df_filtered = df_filtered[df_filtered['outcome_type'] == selected_outcome]
         
         # Create the map section
-        st.subheader("📍 Animal Shelter Locations Map (Pydeck)")
+        st.subheader("Outcome map for animals at the Sonoma County Animal Shelter")
         
         # Add map performance controls
         col1, col2 = st.columns([2, 1])
@@ -342,14 +342,7 @@ else:
 # Add information about the dashboard
 with st.expander("ℹ️ About this Pydeck Dashboard"):
     st.markdown("""
-    This dashboard displays animal shelter location data using **Pydeck** for high-performance visualization.
-    
-    **Pydeck Advantages:**
-    - Handles large datasets (10k+ points) smoothly
-    - GPU-accelerated rendering for smooth interactions
-    - Multiple map styles available
-    - Native Streamlit integration
-    - WebGL-based visualization
+    This dashboard displays Sonoma county animal shelter location data using **Pydeck** for high-performance visualization.
     
     **Features:**
     - Interactive map with colored points based on outcome type
