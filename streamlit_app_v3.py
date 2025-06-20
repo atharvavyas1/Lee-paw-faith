@@ -193,7 +193,7 @@ if 'filter_outcome' not in st.session_state:
 if 'map_max_points' not in st.session_state:
     st.session_state.map_max_points = 1000
 if 'map_style' not in st.session_state:
-    st.session_state.map_style = 'mapbox://styles/mapbox/dark-v9'
+    st.session_state.map_style = 'mapbox://styles/mapbox/light-v9'
 if 'date_range' not in st.session_state:
     st.session_state.date_range = None
 
