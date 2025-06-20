@@ -272,8 +272,8 @@ if 'location' in df.columns:
             st.session_state.map_max_points = max_points
             
             map_styles = {
-                'Light': 'mapbox://styles/mapbox/light-v9',
                 'Dark': 'mapbox://styles/mapbox/dark-v9',
+                'Light': 'mapbox://styles/mapbox/light-v9',
                 'Satellite': 'mapbox://styles/mapbox/satellite-v9',
                 'Streets': 'mapbox://styles/mapbox/streets-v11'
             }
