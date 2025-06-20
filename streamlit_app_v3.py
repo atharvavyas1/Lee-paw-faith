@@ -201,6 +201,8 @@ if 'date_range' not in st.session_state:
 with st.spinner("Loading Sonoma county animal shelter data..."):
     df = load_data()
 
+st.write("Columns in the loaded data:", df.columns)
+
 # Clean location data
 if 'location' in df.columns:
     # Apply extraction
