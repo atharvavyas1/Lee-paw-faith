@@ -194,6 +194,8 @@ if 'map_max_points' not in st.session_state:
     st.session_state.map_max_points = 1000
 if 'map_style' not in st.session_state:
     st.session_state.map_style = 'mapbox://styles/mapbox/light-v9'
+if 'date_range' not in st.session_state:
+    st.session_state.date_range = None
 
 # Load and process data
 with st.spinner("Loading Sonoma county animal shelter data..."):
@@ -211,6 +213,12 @@ if 'location' in df.columns:
     # Filter out rows with missing coordinates
     df_with_coords = df.dropna(subset=['latitude', 'longitude'])
     
+    # Convert datetime column and drop rows with invalid dates
+    if 'datetime' in df_with_coords.columns:
+        df_with_coords = df_with_coords.copy()
+        df_with_coords['datetime'] = pd.to_datetime(df_with_coords['datetime'], errors='coerce')
+        df_with_coords.dropna(subset=['datetime'], inplace=True)
+
     st.write(f"**Data Summary:**")
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -224,6 +232,38 @@ if 'location' in df.columns:
         # Create sidebar filters
         st.sidebar.header("Filters")
         
+        # Start with the full dataset for filtering
+        df_filtered = df_with_coords
+
+        # Date range slider
+        if 'datetime' in df_filtered.columns:
+            min_date = df_with_coords['datetime'].min().date()
+            max_date = df_with_coords['datetime'].max().date()
+
+            if st.session_state.date_range is None:
+                st.session_state.date_range = (min_date, max_date)
+            
+            # Ensure session state value is within the new data's bounds
+            session_start, session_end = st.session_state.date_range
+            if session_start < min_date or session_end > max_date:
+                st.session_state.date_range = (min_date, max_date)
+
+            selected_date_range = st.sidebar.slider(
+                "Filter by Date of Outcome",
+                min_value=min_date,
+                max_value=max_date,
+                value=st.session_state.date_range,
+                key="date_range_selector"
+            )
+            st.session_state.date_range = selected_date_range
+            
+            if len(selected_date_range) == 2:
+                start_date, end_date = selected_date_range
+                df_filtered = df_filtered[
+                    (df_filtered['datetime'].dt.date >= start_date) & 
+                    (df_filtered['datetime'].dt.date <= end_date)
+                ]
+
         # Animal type filter (if available)
         if 'type' in df_with_coords.columns:
             animal_types = ['All'] + sorted(df_with_coords['type'].dropna().unique().tolist())
@@ -236,15 +276,11 @@ if 'location' in df.columns:
             st.session_state.filter_animal_type = selected_animal_type
             
             if selected_animal_type != 'All':
-                df_filtered = df_with_coords[df_with_coords['type'] == selected_animal_type]
-            else:
-                df_filtered = df_with_coords
-        else:
-            df_filtered = df_with_coords
+                df_filtered = df_filtered[df_filtered['type'] == selected_animal_type]
         
         # Outcome type filter (if available)
         if 'outcome_type' in df_filtered.columns:
-            outcome_types = ['All'] + sorted(df_filtered['outcome_type'].dropna().unique().tolist())
+            outcome_types = ['All'] + sorted(df_with_coords['outcome_type'].dropna().unique().tolist())
             selected_outcome = st.sidebar.selectbox(
                 "Outcome Type", 
                 outcome_types,
