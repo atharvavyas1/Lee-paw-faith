@@ -6,7 +6,7 @@ import io
 import re
 import pydeck as pdk
 
-st.write("🔄 App loaded at:", pd.Timestamp.now())
+#st.write("🔄 App loaded at:", pd.Timestamp.now())
 
 # Set page config
 st.set_page_config(
