@@ -8,13 +8,13 @@ import pydeck as pdk
 
 # Set page config
 st.set_page_config(
-    page_title="Animal Shelter Locations",
+    page_title="Local Urban Companion Archive (LUCA)",
     page_icon="🐾",
     layout="wide"
 )
 
-st.title("🐾 Animal Shelter Location Dashboard")
-st.markdown("Interactive map showing animal shelter locations in Sonoma County")
+st.title("🐾 Local Urban Companion Archive (LUCA)")
+st.markdown("Interactive map showing outcomes of animals who were admitted to the Sonoma County Animal Shelter")
 
 # Function to extract the (lat, lon) string or keep NaN
 def extract_latlon(val):
@@ -372,3 +372,6 @@ with st.expander("ℹ️ About this Pydeck Dashboard"):
     
     **Data Source:** Sonoma County Open Data Portal
     """)
+
+    # Add a date slider on here
+    # Rename the mapping tool to LUCA

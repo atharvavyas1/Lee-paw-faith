@@ -9,12 +9,12 @@ from streamlit_folium import st_folium
 
 # Set page config
 st.set_page_config(
-    page_title="Animal Shelter Locations",
+    page_title="Local Urban Companion Archive (LUCA)",
     page_icon="🐾",
     layout="wide"
 )
 
-st.title("🐾 Animal Shelter Location Dashboard")
+st.title("🐾 Local Urban Companion Archive (LUCA)")
 st.markdown("Interactive map showing animal shelter locations in Sonoma County")
 
 # Function to extract the (lat, lon) string or keep NaN
