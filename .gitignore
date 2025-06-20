@@ -7,5 +7,20 @@ SoW/
 ~$harva Vyas BUSA 649 Project Proposal.docx
 Timeline/
 Proposal/
-app_v2.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Streamlit
+.streamlit/
+
+# Files to ignore
 app.py
+app_pydeck_v2.py
+app_v2.py
