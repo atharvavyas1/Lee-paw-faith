@@ -177,9 +177,21 @@ def evaluate_arima_model(X, arima_order, seasonal_order=None):
     """Evaluate ARIMA/SARIMA model and return MAPE"""
     
     try:
+        # Check if series has sufficient data
+        if len(X) < 24:
+            return np.inf, None
+        
+        # Check if series is constant
+        if X.nunique() <= 1:
+            return np.inf, None
+        
         # Split data into train and test
         train_size = int(len(X) * 0.8)
         train, test = X[:train_size], X[train_size:]
+        
+        # Ensure minimum sizes
+        if len(train) < 12 or len(test) < 1:
+            return np.inf, None
         
         # Fit model
         if seasonal_order:
@@ -192,11 +204,21 @@ def evaluate_arima_model(X, arima_order, seasonal_order=None):
         # Make predictions
         forecast = model_fit.forecast(steps=len(test))
         
-        # Calculate MAPE
-        mape = mean_absolute_percentage_error(test, forecast) * 100
+        # Check for invalid forecasts
+        if np.any(np.isnan(forecast)) or np.any(np.isinf(forecast)):
+            return np.inf, None
+        
+        # Calculate MAPE only if test values are not zero
+        if np.any(test == 0):
+            # Use MAE instead of MAPE when there are zero values
+            mae = np.mean(np.abs(test - forecast))
+            mape = mae / np.mean(np.abs(test)) * 100 if np.mean(np.abs(test)) > 0 else np.inf
+        else:
+            mape = mean_absolute_percentage_error(test, forecast) * 100
         
         return mape, model_fit
-    except:
+        
+    except Exception as e:
         return np.inf, None
 
 def auto_arima_grid_search(timeseries, seasonal=False):
