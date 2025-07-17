@@ -27,32 +27,77 @@ def load_data():
     """Load and preprocess Austin Animal Center intake and outcome data"""
     
     # Load intake data
-    intake_url = "https://data.austintexas.gov/resource/wter-evkm.csv?$limit=500000"
-    outcome_url = "https://data.austintexas.gov/resource/9t4d-g238.csv?$limit=500000"
+    intake_url = "https://data.austintexas.gov/resource/wter-evkm.csv?$limit=50000"
+    outcome_url = "https://data.austintexas.gov/resource/9t4d-g238.csv?$limit=50000"
     
     try:
+        st.info("Loading intake data...")
         intake_df = pd.read_csv(intake_url)
+        
+        st.info("Loading outcome data...")
         outcome_df = pd.read_csv(outcome_url)
+        
+        # Basic validation
+        if len(intake_df) == 0:
+            st.error("Intake dataset is empty")
+            return None, None
+            
+        if len(outcome_df) == 0:
+            st.error("Outcome dataset is empty")
+            return None, None
+            
+        st.success(f"Loaded {len(intake_df)} intake records and {len(outcome_df)} outcome records")
+        
+        return intake_df, outcome_df
+        
     except Exception as e:
         st.error(f"Error loading data: {e}")
+        st.info("You can try refreshing the page or check your internet connection.")
         return None, None
-    
-    return intake_df, outcome_df
 
 def preprocess_data(intake_df, outcome_df):
     """Preprocess the intake and outcome data for time series analysis"""
     
     # Process intake data
     intake_processed = intake_df.copy()
-    intake_processed['datetime'] = pd.to_datetime(intake_processed['datetime'])
+    try:
+        intake_processed['datetime'] = pd.to_datetime(intake_processed['datetime'], errors='coerce')
+    except:
+        st.error("Error parsing intake datetime. Trying alternative formats...")
+        intake_processed['datetime'] = pd.to_datetime(intake_processed['datetime'], 
+                                                    infer_datetime_format=True, errors='coerce')
+    
+    # Remove rows with invalid dates
+    intake_processed = intake_processed.dropna(subset=['datetime'])
     intake_processed['date'] = intake_processed['datetime'].dt.date
     intake_processed['year_month'] = intake_processed['datetime'].dt.to_period('M')
     
     # Process outcome data  
     outcome_processed = outcome_df.copy()
-    outcome_processed['datetime'] = pd.to_datetime(outcome_processed['datetime'])
+    try:
+        outcome_processed['datetime'] = pd.to_datetime(outcome_processed['datetime'], errors='coerce')
+    except:
+        st.error("Error parsing outcome datetime. Trying alternative formats...")
+        outcome_processed['datetime'] = pd.to_datetime(outcome_processed['datetime'], 
+                                                     infer_datetime_format=True, errors='coerce')
+    
+    # Remove rows with invalid dates
+    outcome_processed = outcome_processed.dropna(subset=['datetime'])
     outcome_processed['date'] = outcome_processed['datetime'].dt.date
     outcome_processed['year_month'] = outcome_processed['datetime'].dt.to_period('M')
+    
+    # Check if we have enough data after cleaning
+    if len(intake_processed) == 0:
+        st.error("No valid intake data after datetime parsing")
+        return None, None, None, None
+    
+    if len(outcome_processed) == 0:
+        st.error("No valid outcome data after datetime parsing")
+        return None, None, None, None
+    
+    # Fill missing animal_type with 'Unknown'
+    intake_processed['animal_type'] = intake_processed['animal_type'].fillna('Unknown')
+    outcome_processed['animal_type'] = outcome_processed['animal_type'].fillna('Unknown')
     
     # Aggregate intake data by month and animal type
     intake_monthly = (intake_processed.groupby(['year_month', 'animal_type'])
@@ -364,28 +409,40 @@ def main():
     
     # Preprocess data
     with st.spinner("Preprocessing data..."):
-        intake_monthly, outcome_monthly, intake_daily, outcome_daily = preprocess_data(intake_raw, outcome_raw)
+        result = preprocess_data(intake_raw, outcome_raw)
+        
+    if result[0] is None:  # Check if preprocessing failed
+        st.error("Data preprocessing failed. Please check the data quality.")
+        return
+    
+    intake_monthly, outcome_monthly, intake_daily, outcome_daily = result
     
     # Sidebar controls
-    analysis_type = st.sidebar.selectbox(
-        "Select Analysis Type:",
-        ["Intakes", "Outcomes"]
-    )
-    
-    selected_animal = st.sidebar.selectbox(
-        "Select Animal Type:",
-        ["All"] + list(intake_monthly['animal_type'].unique())
-    )
-    
-    prediction_months = st.sidebar.slider(
-        "Prediction Horizon (months):",
-        min_value=1, max_value=6, value=3
-    )
-    
-    # Date range slider for visualization
     if len(intake_monthly) > 0:
-        min_date = intake_monthly['date'].min()
-        max_date = intake_monthly['date'].max()
+        analysis_type = st.sidebar.selectbox(
+            "Select Analysis Type:",
+            ["Intakes", "Outcomes"]
+        )
+        
+        # Get available animal types
+        if analysis_type == "Intakes":
+            available_animals = list(intake_monthly['animal_type'].unique())
+        else:
+            available_animals = list(outcome_monthly['animal_type'].unique())
+        
+        selected_animal = st.sidebar.selectbox(
+            "Select Animal Type:",
+            ["All"] + available_animals
+        )
+        
+        prediction_months = st.sidebar.slider(
+            "Prediction Horizon (months):",
+            min_value=1, max_value=6, value=3
+        )
+        
+        # Date range slider for visualization
+        min_date = min(intake_monthly['date'].min(), outcome_monthly['date'].min())
+        max_date = max(intake_monthly['date'].max(), outcome_monthly['date'].max())
         
         date_range = st.sidebar.date_input(
             "Date Range for Visualization:",
@@ -393,6 +450,9 @@ def main():
             min_value=min_date,
             max_value=max_date
         )
+    else:
+        st.error("No monthly data available for analysis")
+        return
     
     # Main dashboard
     col1, col2 = st.columns([2, 1])
@@ -406,13 +466,19 @@ def main():
         
         with col_a:
             st.metric("Total Intake Records", len(intake_raw))
-            st.metric("Intake Date Range", 
-                     f"{intake_daily['datetime'].min().strftime('%Y-%m-%d')} to {intake_daily['datetime'].max().strftime('%Y-%m-%d')}")
+            if len(intake_daily) > 0:
+                st.metric("Intake Date Range", 
+                         f"{intake_daily['datetime'].min().strftime('%Y-%m-%d')} to {intake_daily['datetime'].max().strftime('%Y-%m-%d')}")
+            else:
+                st.metric("Intake Date Range", "No valid dates")
         
         with col_b:
             st.metric("Total Outcome Records", len(outcome_raw))
-            st.metric("Outcome Date Range",
-                     f"{outcome_daily['datetime'].min().strftime('%Y-%m-%d')} to {outcome_daily['datetime'].max().strftime('%Y-%m-%d')}")
+            if len(outcome_daily) > 0:
+                st.metric("Outcome Date Range",
+                         f"{outcome_daily['datetime'].min().strftime('%Y-%m-%d')} to {outcome_daily['datetime'].max().strftime('%Y-%m-%d')}")
+            else:
+                st.metric("Outcome Date Range", "No valid dates")
         
         # Animal type distribution
         st.subheader("Animal Type Distribution")
@@ -455,16 +521,30 @@ def main():
         monthly_data = outcome_monthly.copy()
         data_type = "outcome"
     
+    # Check if we have data for the selected analysis type
+    if len(monthly_data) == 0:
+        st.warning(f"No {data_type} data available for analysis.")
+        return
+    
     # Filter by animal type if not "All"
     if selected_animal != "All":
         monthly_data = monthly_data[monthly_data['animal_type'] == selected_animal]
+        if len(monthly_data) == 0:
+            st.warning(f"No {data_type} data available for {selected_animal}.")
+            return
     else:
         # Aggregate all animal types
         monthly_data = monthly_data.groupby('date')[f'{data_type}_count'].sum().reset_index()
         monthly_data['animal_type'] = 'All Animals'
     
     if len(monthly_data) < 24:  # Need minimum data for analysis
-        st.warning("Insufficient data for time series analysis. Need at least 24 months of data.")
+        st.warning(f"Insufficient data for time series analysis. Need at least 24 months of data. Currently have {len(monthly_data)} months.")
+        
+        # Show available data anyway
+        if len(monthly_data) > 0:
+            st.subheader("Available Data (Insufficient for ARIMA)")
+            chart_data = monthly_data.set_index('date')[f'{data_type}_count']
+            st.line_chart(chart_data)
         return
     
     # Create time series
@@ -612,33 +692,46 @@ def main():
         else:
             pattern_data = outcome_daily.copy()
         
-        pattern_data['month'] = pattern_data['datetime'].dt.month
-        monthly_avg = pattern_data.groupby('month').size().reset_index(name='count')
-        monthly_avg['month_name'] = pd.to_datetime(monthly_avg['month'], format='%m').dt.strftime('%b')
-        
-        # Prepare data for streamlit bar chart
-        monthly_chart_data = monthly_avg.set_index('month_name')['count']
-        
-        st.subheader(f"Average Monthly {analysis_type}")
-        st.bar_chart(monthly_chart_data)
+        if len(pattern_data) > 0:
+            pattern_data['month'] = pattern_data['datetime'].dt.month
+            monthly_avg = pattern_data.groupby('month').size().reset_index(name='count')
+            
+            if len(monthly_avg) > 0:
+                monthly_avg['month_name'] = pd.to_datetime(monthly_avg['month'], format='%m').dt.strftime('%b')
+                
+                # Prepare data for streamlit bar chart
+                monthly_chart_data = monthly_avg.set_index('month_name')['count']
+                
+                st.subheader(f"Average Monthly {analysis_type}")
+                st.bar_chart(monthly_chart_data)
+            else:
+                st.info("No monthly pattern data available")
+        else:
+            st.info("No data available for seasonal pattern analysis")
     
     with col2:
         st.subheader("Weekly Patterns")
         
         # Weekly pattern analysis
-        pattern_data['day_of_week'] = pattern_data['datetime'].dt.day_name()
-        weekly_avg = pattern_data.groupby('day_of_week').size().reset_index(name='count')
-        
-        # Reorder days
-        day_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-        weekly_avg['day_of_week'] = pd.Categorical(weekly_avg['day_of_week'], categories=day_order, ordered=True)
-        weekly_avg = weekly_avg.sort_values('day_of_week')
-        
-        # Prepare data for streamlit bar chart
-        weekly_chart_data = weekly_avg.set_index('day_of_week')['count']
-        
-        st.subheader(f"Average Weekly {analysis_type}")
-        st.bar_chart(weekly_chart_data)
+        if len(pattern_data) > 0:
+            pattern_data['day_of_week'] = pattern_data['datetime'].dt.day_name()
+            weekly_avg = pattern_data.groupby('day_of_week').size().reset_index(name='count')
+            
+            if len(weekly_avg) > 0:
+                # Reorder days
+                day_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+                weekly_avg['day_of_week'] = pd.Categorical(weekly_avg['day_of_week'], categories=day_order, ordered=True)
+                weekly_avg = weekly_avg.sort_values('day_of_week')
+                
+                # Prepare data for streamlit bar chart
+                weekly_chart_data = weekly_avg.set_index('day_of_week')['count']
+                
+                st.subheader(f"Average Weekly {analysis_type}")
+                st.bar_chart(weekly_chart_data)
+            else:
+                st.info("No weekly pattern data available")
+        else:
+            st.info("No data available for weekly pattern analysis")
     
     # Data quality information
     st.header("📋 Data Quality Summary")
