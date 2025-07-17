@@ -122,21 +122,58 @@ def preprocess_data(intake_df, outcome_df):
 def check_stationarity(timeseries, title):
     """Check stationarity using Augmented Dickey-Fuller test"""
     
-    # Perform Augmented Dickey-Fuller test
-    result = adfuller(timeseries.dropna())
+    # Drop NaN values and convert to numpy array to handle edge cases
+    clean_series = timeseries.dropna()
     
-    st.subheader(f'Stationarity Test Results for {title}')
-    st.write(f'ADF Statistic: {result[0]:.6f}')
-    st.write(f'p-value: {result[1]:.6f}')
-    st.write('Critical Values:')
-    for key, value in result[4].items():
-        st.write(f'\t{key}: {value:.6f}')
+    # Check if series is empty
+    if len(clean_series) == 0:
+        st.error(f"No valid data for stationarity test: {title}")
+        return False
     
-    if result[1] <= 0.05:
-        st.success("Series is stationary (reject null hypothesis)")
-        return True
-    else:
-        st.warning("Series is non-stationary (fail to reject null hypothesis)")
+    # Convert to numeric and drop any remaining non-numeric values
+    try:
+        clean_series = pd.to_numeric(clean_series, errors='coerce').dropna()
+    except:
+        st.error(f"Cannot convert series to numeric values: {title}")
+        return False
+    
+    # Check again after numeric conversion
+    if len(clean_series) == 0:
+        st.error(f"No valid numeric data for stationarity test: {title}")
+        return False
+    
+    # Check if series is constant (all values are the same)
+    if clean_series.nunique() <= 1 or clean_series.std() == 0:
+        st.warning(f"Series is constant (no variation): {title}")
+        st.write("Cannot perform ADF test on constant series")
+        return True  # Constant series is technically stationary
+    
+    # Check if series has sufficient length
+    if len(clean_series) < 12:
+        st.warning(f"Insufficient data for reliable stationarity test: {title} (only {len(clean_series)} observations)")
+        return False
+    
+    try:
+        # Perform Augmented Dickey-Fuller test
+        result = adfuller(clean_series)
+        
+        st.subheader(f'Stationarity Test Results for {title}')
+        st.write(f'ADF Statistic: {result[0]:.6f}')
+        st.write(f'p-value: {result[1]:.6f}')
+        st.write('Critical Values:')
+        for key, value in result[4].items():
+            st.write(f'\t{key}: {value:.6f}')
+        
+        if result[1] <= 0.05:
+            st.success("Series is stationary (reject null hypothesis)")
+            return True
+        else:
+            st.warning("Series is non-stationary (fail to reject null hypothesis)")
+            return False
+            
+    except Exception as e:
+        st.error(f"Error performing stationarity test: {str(e)}")
+        st.write(f"Series info: length={len(clean_series)}, min={clean_series.min()}, max={clean_series.max()}")
         return False
 
 def plot_decomposition(timeseries, title, period=12):
