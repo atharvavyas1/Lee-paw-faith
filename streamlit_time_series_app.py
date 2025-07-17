@@ -27,8 +27,8 @@ def load_data():
     """Load and preprocess Austin Animal Center intake and outcome data"""
     
     # Load intake data
-    intake_url = "https://data.austintexas.gov/resource/wter-evkm.csv?$limit=50000"
-    outcome_url = "https://data.austintexas.gov/resource/9t4d-g238.csv?$limit=50000"
+    intake_url = "https://data.austintexas.gov/resource/wter-evkm.csv?$limit=500000"
+    outcome_url = "https://data.austintexas.gov/resource/9t4d-g238.csv?$limit=500000"
     
     try:
         st.info("Loading intake data...")
