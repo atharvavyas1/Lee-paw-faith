@@ -94,17 +94,19 @@ def preprocess_data(intake_df, outcome_df):
         st.error("No valid outcome data after datetime parsing")
         return None, None, None, None
     
-    # Fill missing animal_type with 'Unknown'
+    # Fill missing values with 'Unknown'
     intake_processed['animal_type'] = intake_processed['animal_type'].fillna('Unknown')
+    intake_processed['intake_type'] = intake_processed['intake_type'].fillna('Unknown')
     outcome_processed['animal_type'] = outcome_processed['animal_type'].fillna('Unknown')
+    outcome_processed['outcome_type'] = outcome_processed['outcome_type'].fillna('Unknown')
     
-    # Aggregate intake data by month and animal type
-    intake_monthly = (intake_processed.groupby(['year_month', 'animal_type'])
+    # Aggregate intake data by month, animal type, and intake type
+    intake_monthly = (intake_processed.groupby(['year_month', 'animal_type', 'intake_type'])
                      .size()
                      .reset_index(name='intake_count'))
     
-    # Aggregate outcome data by month and animal type
-    outcome_monthly = (outcome_processed.groupby(['year_month', 'animal_type'])
+    # Aggregate outcome data by month, animal type, and outcome type
+    outcome_monthly = (outcome_processed.groupby(['year_month', 'animal_type', 'outcome_type'])
                       .size()
                       .reset_index(name='outcome_count'))
     
@@ -505,15 +507,24 @@ def main():
             ["Intakes", "Outcomes"]
         )
         
-        # Get available animal types
+        # Get available animal types and intake/outcome types
         if analysis_type == "Intakes":
             available_animals = list(intake_monthly['animal_type'].unique())
+            available_types = list(intake_monthly['intake_type'].unique())
+            type_label = "Intake Type"
         else:
             available_animals = list(outcome_monthly['animal_type'].unique())
+            available_types = list(outcome_monthly['outcome_type'].unique())
+            type_label = "Outcome Type"
         
         selected_animal = st.sidebar.selectbox(
             "Select Animal Type:",
             ["All"] + available_animals
+        )
+        
+        selected_type = st.sidebar.selectbox(
+            f"Select {type_label}:",
+            ["All"] + available_types
         )
         
         prediction_months = st.sidebar.slider(
@@ -572,6 +583,20 @@ def main():
         fig_pie = px.pie(values=animal_counts.values, names=animal_counts.index,
                         title=f"{analysis_type} by Animal Type")
         st.plotly_chart(fig_pie, use_container_width=True)
+        
+        # Type distribution (Intake/Outcome type)
+        st.subheader(f"{analysis_type[:-1]} Type Distribution")
+        
+        if analysis_type == "Intakes":
+            type_counts = intake_raw['intake_type'].value_counts()
+            type_title = "Intakes by Intake Type"
+        else:
+            type_counts = outcome_raw['outcome_type'].value_counts()
+            type_title = "Outcomes by Outcome Type"
+        
+        fig_pie_type = px.pie(values=type_counts.values, names=type_counts.index,
+                             title=type_title)
+        st.plotly_chart(fig_pie_type, use_container_width=True)
     
     with col2:
         st.header("🔧 Model Configuration")
@@ -606,10 +631,35 @@ def main():
         if len(monthly_data) == 0:
             st.warning(f"No {data_type} data available for {selected_animal}.")
             return
-    else:
-        # Aggregate all animal types
+    
+    # Filter by intake/outcome type if not "All"
+    type_column = 'intake_type' if data_type == 'intake' else 'outcome_type'
+    if selected_type != "All":
+        monthly_data = monthly_data[monthly_data[type_column] == selected_type]
+        if len(monthly_data) == 0:
+            st.warning(f"No {data_type} data available for {selected_animal} - {selected_type}.")
+            return
+    
+    # Create aggregation strategy based on selections
+    if selected_animal == "All" and selected_type == "All":
+        # Aggregate everything
         monthly_data = monthly_data.groupby('date')[f'{data_type}_count'].sum().reset_index()
         monthly_data['animal_type'] = 'All Animals'
+        monthly_data[type_column] = 'All Types'
+        analysis_label = 'All Animals - All Types'
+    elif selected_animal == "All":
+        # Aggregate by type only
+        monthly_data = monthly_data.groupby(['date', type_column])[f'{data_type}_count'].sum().reset_index()
+        monthly_data['animal_type'] = 'All Animals'
+        analysis_label = f'All Animals - {selected_type}'
+    elif selected_type == "All":
+        # Aggregate by animal only
+        monthly_data = monthly_data.groupby(['date', 'animal_type'])[f'{data_type}_count'].sum().reset_index()
+        monthly_data[type_column] = 'All Types'
+        analysis_label = f'{selected_animal} - All Types'
+    else:
+        # Both animal and type are specified - no aggregation needed
+        analysis_label = f'{selected_animal} - {selected_type}'
     
     # Check minimum data requirements
     min_required_months = 24
@@ -651,10 +701,10 @@ def main():
     # Stationarity tests
     st.subheader("🔍 Stationarity Analysis")
     with st.expander("View Stationarity Test Results"):
-        is_stationary = check_stationarity(ts_data, f"{analysis_type} for {selected_animal}")
+        is_stationary = check_stationarity(ts_data, f"{analysis_type} for {analysis_label}")
         
         # Plot time series decomposition
-        decomposition = plot_decomposition(ts_data, f"{analysis_type} for {selected_animal}")
+        decomposition = plot_decomposition(ts_data, f"{analysis_type} for {analysis_label}")
     
     # Model fitting and forecasting
     st.subheader("🤖 ARIMA Model Training")
@@ -684,7 +734,7 @@ def main():
             if best_model is not None:
                 # Generate forecast
                 forecast, forecast_ci, future_dates = create_forecast(
-                    best_model, prediction_months, data_type, selected_animal)
+                    best_model, prediction_months, data_type, analysis_label)
                 
                 if forecast is not None:
                     # Display model summary
@@ -710,7 +760,7 @@ def main():
                     
                     chart_data = plot_time_series_with_forecast(
                         plot_data, forecast, forecast_ci, future_dates,
-                        f"{analysis_type} Forecast for {selected_animal}",
+                        f"{analysis_type} Forecast for {analysis_label}",
                         data_type, date_range
                     )
                     
@@ -848,8 +898,18 @@ def main():
         # Monthly pattern analysis
         if analysis_type == "Intakes":
             pattern_data = intake_daily.copy()
+            # Filter by selections if not "All"
+            if selected_animal != "All":
+                pattern_data = pattern_data[pattern_data['animal_type'] == selected_animal]
+            if selected_type != "All":
+                pattern_data = pattern_data[pattern_data['intake_type'] == selected_type]
         else:
             pattern_data = outcome_daily.copy()
+            # Filter by selections if not "All"
+            if selected_animal != "All":
+                pattern_data = pattern_data[pattern_data['animal_type'] == selected_animal]
+            if selected_type != "All":
+                pattern_data = pattern_data[pattern_data['outcome_type'] == selected_type]
         
         if len(pattern_data) > 0:
             pattern_data['month'] = pattern_data['datetime'].dt.month
@@ -861,7 +921,7 @@ def main():
                 # Prepare data for streamlit bar chart
                 monthly_chart_data = monthly_avg.set_index('month_name')['count']
                 
-                st.subheader(f"Average Monthly {analysis_type}")
+                st.subheader(f"Average Monthly {analysis_type} - {analysis_label}")
                 st.bar_chart(monthly_chart_data)
                 
                 # Find peak and low months
@@ -891,7 +951,7 @@ def main():
                 # Prepare data for streamlit bar chart
                 weekly_chart_data = weekly_avg.set_index('day_of_week')['count']
                 
-                st.subheader(f"Average Weekly {analysis_type}")
+                st.subheader(f"Average Weekly {analysis_type} - {analysis_label}")
                 st.bar_chart(weekly_chart_data)
                 
                 # Find peak and low days
@@ -908,7 +968,7 @@ def main():
     st.subheader("📊 Trend Analysis")
     
     if len(monthly_data) >= 12:
-        # Calculate year-over-year change
+        # Use the filtered monthly_data for trend analysis
         monthly_data_sorted = monthly_data.sort_values('date')
         monthly_data_sorted['year'] = monthly_data_sorted['date'].dt.year
         
@@ -954,7 +1014,7 @@ def main():
             
             # Yearly trend chart
             yearly_chart_data = yearly_totals.set_index('year')[f'{data_type}_count']
-            st.subheader(f"Annual {analysis_type} Totals")
+            st.subheader(f"Annual {analysis_type} Totals - {analysis_label}")
             st.line_chart(yearly_chart_data)
     
     # Data quality information
@@ -967,8 +1027,10 @@ def main():
         intake_quality = {
             "Total Records": len(intake_raw),
             "Missing Animal Types": intake_raw['animal_type'].isna().sum(),
+            "Missing Intake Types": intake_raw['intake_type'].isna().sum(),
             "Missing Dates": intake_raw['datetime'].isna().sum(),
             "Unique Animal Types": intake_raw['animal_type'].nunique(),
+            "Unique Intake Types": intake_raw['intake_type'].nunique(),
             "Records After Cleaning": len(intake_daily)
         }
         
@@ -983,8 +1045,10 @@ def main():
         outcome_quality = {
             "Total Records": len(outcome_raw),
             "Missing Animal Types": outcome_raw['animal_type'].isna().sum(),
+            "Missing Outcome Types": outcome_raw['outcome_type'].isna().sum(),
             "Missing Dates": outcome_raw['datetime'].isna().sum(),
             "Unique Animal Types": outcome_raw['animal_type'].nunique(),
+            "Unique Outcome Types": outcome_raw['outcome_type'].nunique(),
             "Records After Cleaning": len(outcome_daily)
         }
         
@@ -1000,9 +1064,10 @@ def main():
     ### 📝 How to Use This Dashboard:
     1. **Select Analysis Type**: Choose between 'Intakes' or 'Outcomes'
     2. **Select Animal Type**: Choose a specific animal type or 'All' for aggregated analysis
-    3. **Configure Prediction**: Set the forecast horizon (1-12 months)
-    4. **Train Model**: Click the button to automatically find the best ARIMA parameters
-    5. **Interpret Results**: Review the forecast, model diagnostics, and insights
+    3. **Select Intake/Outcome Type**: Choose a specific type or 'All' for aggregated analysis
+    4. **Configure Prediction**: Set the forecast horizon (1-12 months)
+    5. **Train Model**: Click the button to automatically find the best ARIMA parameters
+    6. **Interpret Results**: Review the forecast, model diagnostics, and insights
     
     ### 🔧 About ARIMA Models:
     - **AR (AutoRegressive)**: Uses past values to predict future values
