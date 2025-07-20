@@ -188,3 +188,10 @@ chart = alt.Chart(chart_df).mark_line().encode(
 )
 
 st.altair_chart(chart, use_container_width=True)
+
+# Forecast table
+st.markdown("### 📋 Forecast Table")
+st.dataframe(
+    forecast_df.rename(columns={"date": "Forecast Month", "count": "Predicted Count"}).set_index("Forecast Month"),
+    use_container_width=True
+)
