@@ -4,6 +4,7 @@ import numpy as np
 import xgboost as xgb
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, mean_absolute_percentage_error
 from datetime import datetime, timedelta
+import altair as alt
 
 # ========== Define model classes ==========
 class XGBoostForecaster:
@@ -161,4 +162,23 @@ chart_df = pd.concat([df[['date', 'count']], forecast_df], ignore_index=True)
 chart_df = chart_df.set_index('date')
 
 st.subheader(f"{data_choice} Forecast (Next {months_ahead} months)")
-st.line_chart(chart_df)
+
+chart_df = chart_df.reset_index()
+chart_df['type'] = ['Actual'] * (len(chart_df) - len(forecast_df)) + ['Forecast'] * len(forecast_df)
+
+chart = alt.Chart(chart_df).mark_line().encode(
+    x='date:T',
+    y='count:Q',
+    color='type:N',
+    strokeDash=alt.condition(
+        alt.datum.type == 'Forecast',
+        alt.value([4, 4]),  # Dashed line
+        alt.value([1, 0])   # Solid line
+    )
+).properties(
+    width=800,
+    height=400,
+    title=f"{data_choice} Forecast vs Actual"
+)
+
+st.altair_chart(chart, use_container_width=True)
