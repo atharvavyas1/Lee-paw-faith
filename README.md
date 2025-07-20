@@ -227,6 +227,50 @@ class AnimalFeatures(BaseModel):
     # ... 40+ additional features
 ```
 
+#### Sample Input
+```json
+{
+ "animal_type_intake": "Cat",
+ "sex_upon_intake": "Spayed Female",
+ "age_upon_intake_days": 180,
+ "intake_type": "Owner Surrender",
+ "intake_condition": "Normal",
+ "has_name": 1,
+ "is_mixed": 0,
+ "num_breeds": 1,
+ "size_category": "Small",
+ "is_working": 0,
+ "is_sporting": 0,
+ "is_terrier": 0,
+ "is_popular_dog": 0,
+ "is_popular_cat": 1,
+ "primary_breed": "Domestic Shorthair",
+ "breed_complexity": 1,
+ "is_austin_metro": 1,
+ "is_core_austin": 0,
+ "is_travis_county": 1,
+ "is_surrounding_area": 0,
+ "is_outside_jurisdiction": 0,
+ "distance_category": "Close Suburbs",
+ "visit_count": 1,
+ "is_return_visit": 0,
+ "is_frequent_returner": 0,
+ "days_since_last_visit": -1,
+ "previous_outcome_type": "First Visit",
+ "month_intake": 3,
+ "intake_year": 2024,
+ "intake_day": 22,
+ "intake_dayofweek": 5,
+ "birth_year": 2023,
+ "birth_month": 9,
+ "intake_season": 2,
+ "intake_is_weekend": 1,
+ "city_area": "Manor",
+ "jurisdiction": "TX",
+ "date_of_birth": "2023-09-15"
+}
+```
+
 #### Output Schema
 ```python
 class PredictionResponse(BaseModel):
