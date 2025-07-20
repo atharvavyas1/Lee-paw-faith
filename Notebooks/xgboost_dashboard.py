@@ -45,17 +45,22 @@ def load_data():
     df_intakes = pd.read_csv(intake_url)
     df_outcomes = pd.read_csv(outcome_url)
     
-    # Convert datetime columns with error handling
-    df_intakes['datetime'] = pd.to_datetime(df_intakes['datetime'], format='mixed', errors='coerce')
-    df_outcomes['datetime'] = pd.to_datetime(df_outcomes['datetime'], format='mixed', errors='coerce')
+    # Check if datetime column exists and convert with error handling
+    if 'datetime' in df_intakes.columns:
+        df_intakes['datetime'] = pd.to_datetime(df_intakes['datetime'], format='mixed', errors='coerce')
+        df_intakes = df_intakes.dropna(subset=['datetime'])
+        df_intakes['date'] = df_intakes['datetime'].dt.to_period('M')
+    else:
+        st.error("No 'datetime' column found in intakes data")
+        return None, None, None, None
     
-    # Drop rows with invalid dates
-    df_intakes = df_intakes.dropna(subset=['datetime'])
-    df_outcomes = df_outcomes.dropna(subset=['datetime'])
-    
-    # Extract date
-    df_intakes['date'] = df_intakes['datetime'].dt.to_period('M')
-    df_outcomes['date'] = df_outcomes['datetime'].dt.to_period('M')
+    if 'datetime' in df_outcomes.columns:
+        df_outcomes['datetime'] = pd.to_datetime(df_outcomes['datetime'], format='mixed', errors='coerce')
+        df_outcomes = df_outcomes.dropna(subset=['datetime'])
+        df_outcomes['date'] = df_outcomes['datetime'].dt.to_period('M')
+    else:
+        st.error("No 'datetime' column found in outcomes data")
+        return None, None, None, None
     
     # Create aggregated data
     aggregated_intakes = df_intakes.groupby(['date', 'animal_type', 'intake_type']).size().reset_index(name='count')
@@ -141,7 +146,7 @@ class XGBoostIntakeForecaster:
         exclude_cols = [target_col, 'date', 'year']
         self.feature_cols = [col for col in df_sorted.columns if col not in exclude_cols]
         
-        X = df_sorted[self.feature_cols].fillna(method='ffill').fillna(0)
+        X = df_sorted[self.feature_cols].ffill().fillna(0)
         y = df_sorted[target_col]
         
         self.model.fit(X, y)
@@ -167,7 +172,7 @@ class XGBoostIntakeForecaster:
             
             # Get the features for the last row (future prediction)
             feature_cols = [col for col in current_df.columns if col not in [target_col, 'date', 'year']]
-            future_features = current_df[feature_cols].iloc[-1:].fillna(method='ffill').fillna(0)
+            future_features = current_df[feature_cols].iloc[-1:].ffill().fillna(0)
             
             # Make prediction
             prediction = self.model.predict(future_features)[0]
@@ -219,7 +224,7 @@ class XGBoostOutcomeForecaster:
         exclude_cols = [target_col, 'date', 'year']
         self.feature_cols = [col for col in df_sorted.columns if col not in exclude_cols]
         
-        X = df_sorted[self.feature_cols].fillna(method='ffill').fillna(0)
+        X = df_sorted[self.feature_cols].ffill().fillna(0)
         y = df_sorted[target_col]
         
         self.model.fit(X, y)
@@ -245,7 +250,7 @@ class XGBoostOutcomeForecaster:
             
             # Get the features for the last row (future prediction)
             feature_cols = [col for col in current_df.columns if col not in [target_col, 'date', 'year']]
-            future_features = current_df[feature_cols].iloc[-1:].fillna(method='ffill').fillna(0)
+            future_features = current_df[feature_cols].iloc[-1:].ffill().fillna(0)
             
             # Make prediction
             prediction = self.model.predict(future_features)[0]
@@ -260,7 +265,11 @@ class XGBoostOutcomeForecaster:
 def main():
     # Load data
     with st.spinner("Loading data..."):
-        df_intakes, df_outcomes, aggregated_intakes, aggregated_outcomes = load_data()
+        data_result = load_data()
+        if data_result[0] is None:
+            st.error("Failed to load data. Please check the data source.")
+            return
+        df_intakes, df_outcomes, aggregated_intakes, aggregated_outcomes = data_result
     
     # Filter data
     aggregated_intakes_filtered = aggregated_intakes[
