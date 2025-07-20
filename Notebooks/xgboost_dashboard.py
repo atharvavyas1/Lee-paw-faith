@@ -46,8 +46,8 @@ def load_data():
     df_outcomes = pd.read_csv(outcome_url)
     
     # Convert datetime columns
-    df_intakes['datetime'] = pd.to_datetime(df_intakes['datetime'])
-    df_outcomes['datetime'] = pd.to_datetime(df_outcomes['datetime'])
+    df_intakes['datetime'] = pd.to_datetime(df_intakes['datetime'], format='mixed')
+    df_outcomes['datetime'] = pd.to_datetime(df_outcomes['datetime'], format='mixed')
     
     # Extract date
     df_intakes['date'] = df_intakes['datetime'].dt.to_period('M')
