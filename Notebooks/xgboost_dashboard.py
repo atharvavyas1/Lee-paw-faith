@@ -45,9 +45,13 @@ def load_data():
     df_intakes = pd.read_csv(intake_url)
     df_outcomes = pd.read_csv(outcome_url)
     
-    # Convert datetime columns
-    df_intakes['datetime'] = pd.to_datetime(df_intakes['datetime'], format='mixed')
-    df_outcomes['datetime'] = pd.to_datetime(df_outcomes['datetime'], format='mixed')
+    # Convert datetime columns with error handling
+    df_intakes['datetime'] = pd.to_datetime(df_intakes['datetime'], format='mixed', errors='coerce')
+    df_outcomes['datetime'] = pd.to_datetime(df_outcomes['datetime'], format='mixed', errors='coerce')
+    
+    # Drop rows with invalid dates
+    df_intakes = df_intakes.dropna(subset=['datetime'])
+    df_outcomes = df_outcomes.dropna(subset=['datetime'])
     
     # Extract date
     df_intakes['date'] = df_intakes['datetime'].dt.to_period('M')
