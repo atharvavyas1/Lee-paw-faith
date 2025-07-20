@@ -28,3 +28,6 @@ Notebooks/longbeach_animal_shelter_complete.csv
 .DS_Store
 Notebooks/breed_list.csv
 Notebooks/location_df.csv
+StackedEnsemble_AllModels_1_AutoML_1_20250720_170401.zip
+StackedEnsemble_AllModels_1_AutoML_1_20250720_170401
+Notebooks/h2o-genmodel.jar
