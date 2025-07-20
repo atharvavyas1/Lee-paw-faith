@@ -11,7 +11,7 @@ app = FastAPI(title="Animal Adoption Prediction API")
 h2o.init()
 
 # Load your saved model
-model = h2o.load_model("/Users/atharvavyas/Desktop/McGill Academics/Community Capstone/StackedEnsemble_AllModels_1_AutoML_1_20250720_170401")
+model = h2o.load_model("StackedEnsemble_AllModels_1_AutoML_1_20250720_170401")
 
 # Define input schema
 class AnimalFeatures(BaseModel):
