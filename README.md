@@ -157,7 +157,7 @@ The Long Beach ML model was developed but ultimately abandoned due to poor perfo
 ### 1. Main Dashboard (`main_dashboard.py`)
 **Purpose**: Comprehensive analytics dashboard for Austin Animal Center
 
-**Live Demo**: [🐾 Austin Animal Shelter Analytics Dashboard](https://lee-paw-faith-ffdpvjpmedauggbo44lkme.streamlit.app/)
+**Live Demo**: [🐾 Austin Animal Shelter Analytics Dashboard](https://lee-paw-faith-5dh5nq5c2gzfwsdrlvm8t5.streamlit.app/)
 
 **Features**:
 - Real-time data visualization
@@ -171,7 +171,7 @@ The Long Beach ML model was developed but ultimately abandoned due to poor perfo
 ### 2. Local Urban Companion Archive - LUCA (`streamlit_app_v3.py`)
 **Purpose**: Geographic visualization of Sonoma County Animal Shelter outcomes
 
-**Live Demo**: [🗺️ Local Urban Companion Archive (LUCA)](https://lee-paw-faith-3hy2vnz2axnebjb7nanj5t.streamlit.app/)
+**Live Demo**: [🗺️ Local Urban Companion Archive (LUCA)](https://lee-paw-faith-hmqkeu7aa3ollusevhcugz.streamlit.app/)
 
 **Features**:
 - Interactive map with animal locations
@@ -182,10 +182,10 @@ The Long Beach ML model was developed but ultimately abandoned due to poor perfo
 
 **Technologies**: Streamlit, PyDeck, Mapbox
 
-### 3. Time Series Analysis (`time_series_app_v2.py`)
+### 3. Time Series Analysis (`xgboost_ch_dashboard.py`)
 **Purpose**: Forecasting and trend analysis for shelter operations
 
-**Live Demo**: [📊 Time Series Forecasting Dashboard](https://lee-paw-faith-9r86zwrryng2zjkleiv6jn.streamlit.app/)
+**Live Demo**: [📊 Time Series Forecasting Dashboard](https://lee-paw-faith-cnmvbn77ecy9st7swszfcs.streamlit.app/)
 
 **Features**:
 - ARIMA modeling for intake/outcome forecasting
