@@ -31,3 +31,4 @@ Notebooks/location_df.csv
 StackedEnsemble_AllModels_1_AutoML_1_20250720_170401.zip
 StackedEnsemble_AllModels_1_AutoML_1_20250720_170401
 Notebooks/h2o-genmodel.jar
+__pycache__/main.cpython-311.pyc
