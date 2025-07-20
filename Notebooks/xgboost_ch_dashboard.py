@@ -166,14 +166,20 @@ st.subheader(f"{data_choice} Forecast (Next {months_ahead} months)")
 chart_df = chart_df.reset_index()
 chart_df['type'] = ['Actual'] * (len(chart_df) - len(forecast_df)) + ['Forecast'] * len(forecast_df)
 
+# Define base chart
 chart = alt.Chart(chart_df).mark_line().encode(
     x='date:T',
     y='count:Q',
-    color='type:N',
+    color=alt.Color('type:N', scale=alt.Scale(domain=['Actual', 'Forecast'], range=['steelblue', 'red'])),
     strokeDash=alt.condition(
         alt.datum.type == 'Forecast',
-        alt.value([4, 4]),  # Dashed line
-        alt.value([1, 0])   # Solid line
+        alt.value([4, 4]),  # Dashed line for forecast
+        alt.value([1, 0])   # Solid line for actual
+    ),
+    size=alt.condition(
+        alt.datum.type == 'Forecast',
+        alt.value(3),  # Thicker line for forecast
+        alt.value(2)   # Normal line for actual
     )
 ).properties(
     width=800,
