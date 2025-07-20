@@ -102,9 +102,10 @@ def load_data():
     intake_agg = df_intakes.groupby('datetime')['animal_id'].count().reset_index()
     outcome_agg = df_outcomes.groupby('datetime')['animal_id'].count().reset_index()
     intake_agg.columns = outcome_agg.columns = ['date', 'count']
-    intake_agg['date'] = pd.to_datetime(intake_agg['date']).dt.to_period('M').dt.to_timestamp()
-    outcome_agg['date'] = pd.to_datetime(outcome_agg['date']).dt.to_period('M').dt.to_timestamp()
+    intake_agg['date'] = pd.to_datetime(intake_agg['date'], format='mixed', utc=True).dt.to_period('M').dt.to_timestamp()
+    outcome_agg['date'] = pd.to_datetime(outcome_agg['date'], format='mixed', utc=True).dt.to_period('M').dt.to_timestamp()
 
+    # Convert to monthly data
     intake_monthly = intake_agg.groupby('date')['count'].sum().reset_index()
     outcome_monthly = outcome_agg.groupby('date')['count'].sum().reset_index()
     return intake_monthly, outcome_monthly
