@@ -395,7 +395,7 @@ with col1:
 with col2:
     st.subheader("Intakes Over Time")
     monthly_intakes = filtered_df.groupby(['intake_year', 'intake_month']).size().reset_index(name='count')
-    monthly_intakes['date'] = pd.to_datetime(monthly_intakes[['intake_year', 'intake_month']].assign(day=1))
+    monthly_intakes['date'] = pd.to_datetime(monthly_intakes.rename(columns={'intake_year': 'year', 'intake_month': 'month'}).assign(day=1)[['year', 'month', 'day']])
     
     fig_line = px.line(
         monthly_intakes, 
