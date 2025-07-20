@@ -183,18 +183,19 @@ The Long Beach ML model was developed but ultimately abandoned due to poor perfo
 **Technologies**: Streamlit, PyDeck, Mapbox
 
 ### 3. Time Series Analysis (`xgboost_ch_dashboard.py`)
-**Purpose**: Forecasting and trend analysis for shelter operations
+**Purpose**: XGBoost-based forecasting for shelter intake and outcome predictions
 
 **Live Demo**: [📊 Time Series Forecasting Dashboard](https://lee-paw-faith-cnmvbn77ecy9st7swszfcs.streamlit.app/)
 
 **Features**:
-- ARIMA modeling for intake/outcome forecasting
-- Seasonal decomposition analysis
-- Stationarity testing
-- Interactive forecasting interface
-- Performance metrics and validation
+- XGBoost regression models for intake/outcome forecasting
+- Advanced feature engineering with lag and rolling statistics
+- Seasonal pattern recognition using trigonometric features
+- Interactive forecasting interface (1-6 months ahead)
+- Real-time model training and prediction
+- Visual comparison of actual vs forecasted values
 
-**Technologies**: Streamlit, Statsmodels, Prophet, Plotly
+**Technologies**: Streamlit, XGBoost, Altair, Pandas, NumPy
 
 ## 🚀 API Deployment
 
