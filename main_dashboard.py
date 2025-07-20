@@ -33,7 +33,8 @@ st.markdown("""
         border-left: 4px solid #2E8B57;
     }
     .insight-box {
-        background-color: #e8f4f8;
+        background-color: #000000;
+        color: #ffffff;
         padding: 1rem;
         border-radius: 0.5rem;
         border-left: 4px solid #1f77b4;
@@ -394,8 +395,7 @@ with col1:
 with col2:
     st.subheader("Intakes Over Time")
     monthly_intakes = filtered_df.groupby(['intake_year', 'intake_month']).size().reset_index(name='count')
-    monthly_intakes['day'] = 1
-    monthly_intakes['date'] = pd.to_datetime(monthly_intakes[['intake_year', 'intake_month', 'day']])
+    monthly_intakes['date'] = pd.to_datetime(monthly_intakes[['intake_year', 'intake_month']].assign(day=1))
     
     fig_line = px.line(
         monthly_intakes, 
