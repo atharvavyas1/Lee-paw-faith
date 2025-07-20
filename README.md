@@ -1,8 +1,9 @@
-# Welcome to **Lee-paw-faith**: A project connducted to help stray animals & animal shelters around the world.
+# Welcome to **Lee-paw-faith**!
+A project conducted to help stray animals & animal shelters around the world.
 
-## Data for Sonoma: 
+## Data for Austin Animal Centre: 
 
-Here's a preview of the data we'll be working with for the proof of concept we want to show
+Here's a preview of the data being worked with. Part of it is offered by the shelter itself, and part of it are features engineered to enhance the quality of the information captured. 
 
 | Column Name                   | Description                                                                 |
 |-------------------------------|-----------------------------------------------------------------------------|
