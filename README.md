@@ -428,6 +428,5 @@ Community Capstone/
 ---
 
 **Project Status**: Active Development  
-**Last Updated**: January 2025  
-**Maintainers**: Community Capstone Team  
-**License**: MIT License
+**Last Updated**: July 2025  
+**Maintainers**: [@atharvavyas1](https://github.com/atharvavyas1)
