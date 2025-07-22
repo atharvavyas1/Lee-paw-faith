@@ -156,8 +156,8 @@ The current model achieves 78% accuracy, but there's significant room for improv
 #### Performance Comparison
 | Algorithm | Optimal K | Silhouette Score | Performance |
 |-----------|-----------|------------------|-------------|
-| K-Means | 8 | 0.1087 | Good |
-| Agglomerative | 2 | 0.1948 | Best |
+| K-Means | 8 | 0.1087 | Poor |
+| Agglomerative | 2 | 0.1948 | Poor |
 | DBSCAN | 18 | -0.2439 | Poor |
 | **Spectral Clustering** | **3** | **0.4204** | **Best** |
 
