@@ -385,7 +385,7 @@ streamlit run main_dashboard.py
    - Filter by animal type and outcome
    - Real-time data exploration
 
-3. **Time Series Dashboard**: `streamlit run time_series_app_v2.py`
+3. **Time Series Dashboard**: `streamlit run xgboost_ch_dashboard.py`
    - Forecasting and trend analysis
    - Seasonal pattern identification
    - Performance metrics
