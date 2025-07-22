@@ -38,35 +38,35 @@ The primary dataset comes from Austin Animal Center, containing comprehensive in
 
 | Feature Category      | Features              | Description                                 |
 |----------------------|----------------------|---------------------------------------------|
-| Identification       | animal_id            | Unique animal identifier                    |
-| Identification       | name                 | Name of the animal (if available)           |
-| Temporal             | datetime             | Date and time of intake                     |
-| Temporal             | datetime2            | Month and year of intake                    |
-| Location             | found_location       | Location where animal was found             |
-| Operational          | intake_type          | Type of intake (e.g., Stray, Owner Surrender) |
-| Condition            | intake_condition     | Condition of the animal at intake           |
-| Animal Information   | animal_type          | Animal type (e.g., Dog, Cat)                |
-| Animal Information   | sex_upon_intake      | Sex of the animal at intake                 |
-| Animal Information   | age_upon_intake      | Age of the animal at intake                 |
-| Animal Information   | breed                | Animal breed                                |
-| Animal Information   | color                | Animal color                                |
+| Identification       | `animal_id`            | Unique animal identifier                    |
+| Identification       | `name`                 | Name of the animal (if available)           |
+| Temporal             | `datetime`             | Date and time of intake                     |
+| Temporal             | `datetime2`            | Month and year of intake                    |
+| Location             | `found_location`       | Location where animal was found             |
+| Operational          | `intake_type`          | Type of intake (e.g., Stray, Owner Surrender) |
+| Condition            | `intake_condition`     | Condition of the animal at intake           |
+| Animal Information   | `animal_type`          | Animal type (e.g., Dog, Cat)                |
+| Animal Information   | `sex_upon_intake`      | Sex of the animal at intake                 |
+| Animal Information   | `age_upon_intake`      | Age of the animal at intake                 |
+| Animal Information   | `breed`                | Animal breed                                |
+| Animal Information   | `color`                | Animal color                                |
 
 **Outcomes Data**
 
 | Feature Category      | Features              | Description                                 |
 |----------------------|----------------------|---------------------------------------------|
-| Identification       | animal_id            | Unique animal identifier                    |
-| Demographic          | date_of_birth        | Date of birth of the animal                 |
-| Identification       | name                 | Name of the animal (if available)           |
-| Temporal             | datetime             | Date and time of outcome                    |
-| Temporal             | monthyear            | Month and year of outcome                   |
-| Operational          | outcome_type         | Type of outcome (e.g., Adoption, Euthanasia)|
-| Operational          | outcome_subtype      | Subtype of outcome                          |
-| Animal Information   | animal_type          | Animal type (e.g., Dog, Cat)                |
-| Animal Information   | sex_upon_outcome     | Sex of the animal at outcome                |
-| Animal Information   | age_upon_outcome     | Age of the animal at outcome                |
-| Animal Information   | breed                | Animal breed                                |
-| Animal Information   | color                | Animal color                                |
+| Identification       | `animal_id`            | Unique animal identifier                    |
+| Demographic          | `date_of_birth`        | Date of birth of the animal                 |
+| Identification       | `name`                 | Name of the animal (if available)           |
+| Temporal             | `datetime`             | Date and time of outcome                    |
+| Temporal             | `monthyear`            | Month and year of outcome                   |
+| Operational          | `outcome_type`         | Type of outcome (e.g., Adoption, Euthanasia)|
+| Operational          | `outcome_subtype`      | Subtype of outcome                          |
+| Animal Information   | `animal_type`          | Animal type (e.g., Dog, Cat)                |
+| Animal Information   | `sex_upon_outcome`     | Sex of the animal at outcome                |
+| Animal Information   | `age_upon_outcome`     | Age of the animal at outcome                |
+| Animal Information   | `breed`                | Animal breed                                |
+| Animal Information   | `color`                | Animal color                                |
 
 #### Engineered Features
 
