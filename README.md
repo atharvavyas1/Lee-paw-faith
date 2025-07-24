@@ -131,6 +131,16 @@ The current model achieves 78% accuracy, but there's significant room for improv
    - Feature selection techniques
    - Outlier detection and treatment
 
+#### Model Feature Importance
+
+![Model Feature Importance](Model%20feature%20importance.png)
+*Figure: Feature importance plot for the H2O AutoML Stacked Ensemble model, showing which features most influence adoption predictions.*
+
+#### Model Explainability with SHAP (Shapley Additive Explanations)
+
+![Model SHAP Explanations](Model%20shapley%20additive%20explanations.png)
+*Figure: SHAP summary plot visualizing the impact of each feature on the model output. Red indicates high feature values, blue indicates low feature values.*
+
 ### Anomaly Detection - Isolation Forest
 
 #### Austin Data Results
